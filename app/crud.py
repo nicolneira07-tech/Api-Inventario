@@ -12,6 +12,13 @@ def get_product(db: Session, product_id: int):
     ).first()
 
 
+# NUEVA FUNCIÓN
+def get_product_by_name(db: Session, name: str):
+    return db.query(models.Product).filter(
+        models.Product.name == name
+    ).first()
+
+
 def create_product(db: Session, product: schemas.ProductCreate):
     db_product = models.Product(**product.model_dump())
 
@@ -28,7 +35,10 @@ def update_product(db: Session, product_id: int, product: schemas.ProductUpdate)
     if not db_product:
         return None
 
-    for key, value in product.model_dump().items():
+    # Solo actualiza los campos enviados
+    update_data = product.model_dump(exclude_unset=True)
+
+    for key, value in update_data.items():
         setattr(db_product, key, value)
 
     db.commit()
